@@ -1,0 +1,11 @@
+JSON = object | array | number | string | const;
+
+object = '{' pairs '}';
+array = '[' elemens ']';
+
+const = "true" | "false" | "null";
+
+pairs = [ pair { ',' pair } ];
+pair = string ':' value;
+
+elemens =  [ expr { ',' expr } ];
