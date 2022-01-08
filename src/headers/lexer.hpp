@@ -25,8 +25,7 @@ public:
         , type(type) {};
 
     Type type;
-    size_t line;
-    size_t column;
+    size_t line, column;
     std::string value;
 
     void log() const;
@@ -34,6 +33,12 @@ public:
 
 class Lexer
 {
+public:
+    Lexer(std::string code);
+
+    std::string code;
+    std::vector<Token *> tokens;
+
 private:
     Token *next();
 
@@ -51,13 +56,5 @@ private:
     bool isText();
     bool isVoid();
 
-    size_t index = 0;
-    size_t line = 1;
-    size_t column = 1;
-
-public:
-    Lexer(std::string code);
-
-    std::string code;
-    std::vector<Token *> tokens;
+    size_t index = 0, line = 1, column = 1;
 };

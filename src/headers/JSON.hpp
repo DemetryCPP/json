@@ -5,18 +5,17 @@
 
 namespace JSON
 {
-    class UnexpectedToken
+    using namespace std;
+
+    struct UnexpectedToken
     {
-    public:
-        UnexpectedToken(size_t line, size_t column, std::string token)
+        UnexpectedToken(size_t line, size_t column, string token)
             : line(line)
             , column(column)
             , token(token) {};
 
-
-        size_t line;
-        size_t column;
-        std::string token;
+        size_t line, column;
+        string token;
     };
 
     enum class Type
@@ -29,76 +28,67 @@ namespace JSON
         Null,
     };
 
-    class Base
-    {
-    public:
-        Base(Type type)
-            : type(type) {};
+    struct Base
+    { Type type; };
 
-        Type type;
-    };
-
-    class Object : public Base
+    struct Object : Base
     {
-    public:
-        Object() : Base(Type::Object) {};
-        Object(std::map<std::string, Base *> fields)
+        Object() : Base{Type::Object} {};
+        Object(map<string, Base *> fields)
             : fields(fields)
-            , Base(Type::Object) {};
+            , Base{Type::Object} {};
 
-        std::map<std::string, Base *> fields;
+        map<string, Base *> fields;
 
-        Base *operator[](std::string);
+        template<class T> T *get(string s)
+        { return static_cast<T *>(fields[s]); }
     };
 
-    class String : public Base
+    struct String : Base
     {
-    public:
-        String(std::string value)
+        String(string value)
             : value(value)
-            , Base(Type::String) {};
+            , Base{Type::String} {};
 
-        std::string value;
+        string value;
     };
 
-    class Array : public Base
+    struct Array : Base
     {
-    public:
-        Array() : Base(Type::Array) {};
-        Array(std::vector<Base *> elements)
+        Array() : Base{Type::Array} {};
+        Array(vector<Base *> elements)
             : elements(elements)
-            , Base(Type::Array) {};
+            , Base{Type::Array} {};
 
-        std::vector<Base *> elements;
+        vector<Base *> elements;
 
-        Base *operator[](size_t);
+        template<class T> T *get(size_t s)
+        { return static_cast<T *>(elements[s]); }
     };
 
-    class Number : public Base
+    struct Number : Base
     {
-    public:
         Number(double value)
             : value(value)
-            , Base(Type::Number) {};
+            , Base{Type::Number} {};
 
         double value;
     };
 
-    class Bool : public Base
+    struct Bool : Base
     {
-    public:
         Bool(bool value)
             : value(value)
-            , Base(Type::Number) {};
+            , Base{Type::Number} {};
 
         bool value;
     };
 
-    class Null : public Base
-    {
-    public:
-        Null() : Base(Type::Null) {};
-    };
+    struct Null : Base
+    { Null() : Base{Type::Null} {}; };
 
-    Base *parse(std::string);
+    Base *parse(string);
+
+    template<class T> T *parse(string s)
+    { return static_cast<T *>(parse(s)); }
 }

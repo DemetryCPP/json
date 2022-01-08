@@ -1,34 +1,36 @@
 #include "parser.hpp"
 
 using namespace std;
+using namespace JSON;
+using T = Token::Type;
 
-JSON::Base *Parser::value()
+Base *Parser::value()
 {
     if (current()->value == "{") return object();
     if (current()->value == "[") return array();
-    if (current()->type == Token::Type::String) return new JSON::String(match()->value);
-    if (current()->type == Token::Type::Number) return new JSON::Number(std::stod(match()->value));
-    if (current()->type == Token::Type::Word)
+    if (current()->type == T::String) return new String(match()->value);
+    if (current()->type == T::Number) return new Number(stod(match()->value));
+    if (current()->type == T::Word)
     {
         match();
-        if (current()->value == "null")  return new JSON::Null();
-        if (current()->value == "true")  return new JSON::Bool(true);
-        if (current()->value == "false") return new JSON::Bool(false);
+        if (current()->value == "null")  return new Null();
+        if (current()->value == "true")  return new Bool(true);
+        if (current()->value == "false") return new Bool(false);
     }
 
-    throw new JSON::UnexpectedToken(current()->line, current()->column, current()->value);
+    throw new UnexpectedToken(current()->line, current()->column, current()->value);
 }
 
-JSON::Object *Parser::object()
+Object *Parser::object()
 {
     match("{");
 
     if (current()->value != "}")
     {
-        map<std::string, JSON::Base *> fields;
+        map<string, Base *> fields;
 
         fields.insert({ 
-            match(Token::Type::String)->value,
+            match(T::String)->value,
             (match(":"), value())
         });
         
@@ -36,45 +38,45 @@ JSON::Object *Parser::object()
         while (current()->value == ",")
         {
             fields.insert({ 
-                match(Token::Type::String)->value,
+                match(T::String)->value,
                 (match(":"), value())
             });
         }
 
         match("}");
-        return new JSON::Object(fields);
+        return new Object(fields);
     }
 
     match("}");
-    return new JSON::Object();
+    return new Object();
 }
 
-JSON::Array *Parser::array()
+Array *Parser::array()
 {
     match("[");
 
     if (current()->value != "]")
     {
-        vector<JSON::Base *> elements;
+        vector<Base *> elements;
 
         elements.push_back(value());
         while (current()->value != "]")
-            elements.push_back((match(","), value()));
+            elements.push_back(( match(","), value() ));
 
         match("]");
-        return new JSON::Array(elements);
+        return new Array(elements);
     }
 
     match("]");
-    return new JSON::Array();
+    return new Array();
 }
 
-void Parser::match(std::string value)
+void Parser::match(string value)
 {
     if (current()->value == value)
         match();
     else
-        throw new JSON::UnexpectedToken(current()->line, current()->column, current()->value);
+        throw new UnexpectedToken(current()->line, current()->column, current()->value);
 }
 
 Token *Parser::match(Token::Type type)
@@ -82,7 +84,7 @@ Token *Parser::match(Token::Type type)
     if (current()->type == type)
         return match();
 
-    throw new JSON::UnexpectedToken(current()->line, current()->column, current()->value);
+    throw new UnexpectedToken(current()->line, current()->column, current()->value);
 }
 
 Token *Parser::match()

@@ -3,6 +3,8 @@
 #include "JSON.hpp"
 
 using namespace std;
+using namespace JSON;
+using T = Token::Type;
 
 Token *Lexer::next()
 {
@@ -21,9 +23,9 @@ Token *Lexer::next()
 Token *Lexer::single()
 {
     if (contains(enlist("{}[],:"), current()))
-        return new Token(line, column, match(), Token::Type::Special);
+        return new Token(line, column, match(), T::Special);
 
-    throw new JSON::UnexpectedToken(line, column, std::string(1, current()));   
+    throw new UnexpectedToken(line, column, string(1, current()));   
 }
 
 Token *Lexer::number()
@@ -37,19 +39,19 @@ Token *Lexer::number()
     while (isNumber())
     {
         if (current() == '.')
-            if (isDouble) throw new JSON::UnexpectedToken(line, column, ".");
+            if (isDouble) throw new UnexpectedToken(line, column, ".");
             else isDouble = true;
         buffer += match();
     }
 
-    return new Token(line, column, buffer, Token::Type::Number);
+    return new Token(line, column, buffer, T::Number);
 }
 
 Token *Lexer::str()
 {
-    std::string buffer;
+    string buffer;
 
-    size_t line = this->line,
+    auto line = this->line,
          column = this->column;
 
     if (current() == '"')
@@ -60,14 +62,14 @@ Token *Lexer::str()
 
     match();
 
-    return new Token(line, column, buffer, Token::Type::String);
+    return new Token(line, column, buffer, T::String);
 }
 
 Token *Lexer::word()
 {
-    std::string buffer;
+    string buffer;
 
-    size_t line = this->line,
+    auto line = this->line,
          column = this->column;
 
     while (isText())
@@ -76,9 +78,9 @@ Token *Lexer::word()
     if (buffer != "true"
      && buffer != "false"
      && buffer != "null")
-        throw new JSON::UnexpectedToken(line, column, buffer);
+        throw new UnexpectedToken(line, column, buffer);
 
-    return new Token(line, column, buffer, Token::Type::Word);    
+    return new Token(line, column, buffer, T::Word);    
 }
 
 void Lexer::skipSpaces()
@@ -122,21 +124,21 @@ char Lexer::match()
 
 void Token::log() const
 {
-    std::string types[] = {
-        "[ Special  ]",
-        "[  String  ]",
-        "[  Number  ]",
-        "[   Word   ]",
-        "[   Null   ]",
+    string types[] = {
+        "[ Special ]",
+        "[  String ]",
+        "[  Number ]",
+        "[   Word  ]",
+        "[   Null  ]",
     };
 
-    cout << types[(int)type] << " " << value << std::endl;
+    cout << types[(int)type] << " " << value << endl;
 }
 
-Lexer::Lexer(std::string code) : code(code)
+Lexer::Lexer(string code) : code(code)
 { 
-    Token *newToken = next();
-    while (newToken->type != Token::Type::Null)
+    auto newToken = next();
+    while (newToken->type != T::Null)
     {
         tokens.push_back(newToken);
         // newToken->log();
